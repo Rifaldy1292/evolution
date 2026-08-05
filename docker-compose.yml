@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    env_file:
+      - n8n.env
+    volumes:
+      - ./data/n8n:/home/node/.n8n
+    networks:
+      - automation_network
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - ./data/redis:/data
+    networks:
+      - automation_network
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  evolution-api:
+    image: atendai/evolution-api:latest
+    container_name: evolution-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - evolution.env
+    volumes:
+      - ./data/evolution:/evolution/instances
+    networks:
+      - automation_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  automation_network:
+    driver: bridge
+    name: automation_network
